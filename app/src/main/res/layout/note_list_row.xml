@@ -26,6 +26,16 @@ card_view:cardUseCompatPadding="true">
         android:textColor="@color/colorAccent"
         android:textSize="@dimen/dot_text_size" />
 
+
+    <ImageView
+        android:id="@+id/imageView"
+        android:src="@drawable/ic_add_white_24dp"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+    </ImageView>
+
+
     <TextView
         android:id="@+id/timestamp"
         android:layout_width="129dp"

@@ -5,6 +5,8 @@ package info.androidhive.sqlite.view;
  */
 
 import android.content.Context;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.support.v7.widget.RecyclerView;
 import android.text.Html;
 import android.util.Log;
@@ -42,7 +44,7 @@ public class NotesAdapter extends RecyclerView.Adapter<NotesAdapter.MyViewHolder
             note = view.findViewById(R.id.note);
             dot = view.findViewById(R.id.dot);
             description=view.findViewById(R.id.description);
-
+            imageView=view.findViewById(R.id.imageView);
 
             timestamp = view.findViewById(R.id.timestamp);
 
@@ -77,7 +79,13 @@ public class NotesAdapter extends RecyclerView.Adapter<NotesAdapter.MyViewHolder
 
         holder.description.setText(note.getDescription());
 
+        // Load the images into the ImageView using the Glide library.
+//        Glide.with(mContext).load(
+//                note.getImage()).into(holder.imageView);
 
+        byte[] recordImage = note.getImage();
+        Bitmap bitmap = BitmapFactory.decodeByteArray(recordImage, 0, recordImage.length);
+        holder.imageView.setImageBitmap(bitmap);
     }
 
     @Override

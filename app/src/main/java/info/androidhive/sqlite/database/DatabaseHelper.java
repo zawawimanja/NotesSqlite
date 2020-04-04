@@ -24,6 +24,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     public static final String COLUMN_NOTE = "note";
     public static final String COLUMN_TIMESTAMP = "timestamp";
     public static final String COLUMN_DESCRIPTION = "description";
+    public static final String COLUMN_IMAGE = "image";
 
 
     // Database Version
@@ -50,7 +51,9 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                         + COLUMN_ID + " INTEGER PRIMARY KEY AUTOINCREMENT,"
                         + COLUMN_NOTE + " TEXT,"
                         + COLUMN_TIMESTAMP + " DATETIME DEFAULT CURRENT_TIMESTAMP,"
-                        +  COLUMN_DESCRIPTION + " TEXT"
+                        +  COLUMN_DESCRIPTION + " TEXT,"
+                        +  COLUMN_IMAGE + "BLOB"
+
                         + ")";
 
         // create notes table
@@ -67,7 +70,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         onCreate(db);
     }
 
-    public long insertNote(String note,String description) {
+    public long insertNote(String note,String description,byte[] image) {
         // get writable database as we want to write data
         SQLiteDatabase db = this.getWritableDatabase();
 
@@ -76,6 +79,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         // no need to add them
         values.put(COLUMN_NOTE, note);
         values.put(COLUMN_DESCRIPTION, description);
+        values.put(COLUMN_IMAGE, image);
+
         // insert row
         long id = db.insert(TABLE_NAME, null, values);
 
@@ -91,7 +96,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         SQLiteDatabase db = this.getReadableDatabase();
 
         Cursor cursor = db.query(TABLE_NAME,
-                new String[]{COLUMN_ID, COLUMN_NOTE, COLUMN_TIMESTAMP,COLUMN_DESCRIPTION},
+                new String[]{COLUMN_ID, COLUMN_NOTE, COLUMN_TIMESTAMP,COLUMN_DESCRIPTION,COLUMN_IMAGE},
                 COLUMN_ID + "=?",
                 new String[]{String.valueOf(id)}, null, null, null, null);
 
@@ -103,7 +108,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 cursor.getInt(cursor.getColumnIndex(COLUMN_ID)),
                 cursor.getString(cursor.getColumnIndex(COLUMN_NOTE)),
                 cursor.getString(cursor.getColumnIndex(COLUMN_TIMESTAMP)),
-                cursor.getString(cursor.getColumnIndex(COLUMN_DESCRIPTION))
+                cursor.getString(cursor.getColumnIndex(COLUMN_DESCRIPTION)),
+                cursor.getBlob(cursor.getColumnIndex(COLUMN_IMAGE))
                 );
 
         // close the db connection
@@ -130,6 +136,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 note.setNote(cursor.getString(cursor.getColumnIndex(COLUMN_NOTE)));
                 note.setTimestamp(cursor.getString(cursor.getColumnIndex(COLUMN_TIMESTAMP)));
                 note.setDescription(cursor.getString(cursor.getColumnIndex(COLUMN_DESCRIPTION)));
+                note.setImage(cursor.getBlob(cursor.getColumnIndex(COLUMN_IMAGE)));
 
                 notes.add(note);
             } while (cursor.moveToNext());
@@ -161,6 +168,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         ContentValues values = new ContentValues();
         values.put(COLUMN_NOTE, note.getNote());
         values.put(COLUMN_DESCRIPTION, note.getDescription());
+        values.put(COLUMN_IMAGE, note.getImage());
 
         // updating row
         return db.update(TABLE_NAME, values, COLUMN_ID + " = ?",

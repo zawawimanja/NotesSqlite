@@ -1,7 +1,14 @@
 package info.androidhive.sqlite.view;
 
 import android.content.DialogInterface;
+import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
+import android.graphics.drawable.BitmapDrawable;
+import android.net.Uri;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.support.design.widget.CoordinatorLayout;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AlertDialog;
@@ -14,9 +21,11 @@ import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import java.io.ByteArrayOutputStream;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -33,6 +42,8 @@ public class MainActivity extends AppCompatActivity {
     private TextView noNotesView;
 
     private DatabaseHelper db;
+    EditText inputNote,inputDescription;
+    ImageView inputImage;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -48,6 +59,17 @@ public class MainActivity extends AppCompatActivity {
         db = new DatabaseHelper(this);
 
         notesList.addAll(db.getAllNotes());
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -92,10 +114,10 @@ public class MainActivity extends AppCompatActivity {
      * Inserting new note in db
      * and refreshing the list
      */
-    private void createNote(String note,String description) {
+    private void createNote(String note,String description,byte[] image) {
         // inserting note in db and getting
         // newly inserted note id
-        long id = db.insertNote(note,description);
+        long id = db.insertNote(note,description,image);
 
 
 
@@ -117,11 +139,13 @@ public class MainActivity extends AppCompatActivity {
      * Updating note in db and updating
      * item in the list by its position
      */
-    private void updateNote(String note, int position,String description) {
+    private void updateNote(String note, int position,String description,byte[] image) {
         Note n = notesList.get(position);
         // updating note text
         n.setNote(note);
         n.setDescription(description);
+        n.setImage(image);
+
 
         // updating note in db
         db.updateNote(n);
@@ -185,8 +209,11 @@ public class MainActivity extends AppCompatActivity {
         AlertDialog.Builder alertDialogBuilderUserInput = new AlertDialog.Builder(MainActivity.this);
         alertDialogBuilderUserInput.setView(view);
 
-        final EditText inputNote = view.findViewById(R.id.note);
-        final EditText inputDescription = view.findViewById(R.id.description);
+      inputNote = view.findViewById(R.id.note);
+         inputDescription = view.findViewById(R.id.description);
+
+        inputImage = view.findViewById(R.id.imageView);
+
         TextView dialogTitle = view.findViewById(R.id.dialog_title);
         dialogTitle.setText(!shouldUpdate ? getString(R.string.lbl_new_note_title) : getString(R.string.lbl_edit_note_title));
 
@@ -224,11 +251,11 @@ public class MainActivity extends AppCompatActivity {
                 // check if user updating note
                 if (shouldUpdate && note != null) {
                     // update note by it's id
-                    updateNote( inputNote.getText().toString(), position,inputDescription.getText().toString());
+                    updateNote( inputNote.getText().toString(), position,inputDescription.getText().toString(),imageViewToByte(inputImage));
 
                 } else {
                     // create new note
-                    createNote( inputNote.getText().toString(),inputDescription.getText().toString());
+                    createNote( inputNote.getText().toString(),inputDescription.getText().toString(),imageViewToByte(inputImage));
                 }
             }
         });
@@ -246,4 +273,59 @@ public class MainActivity extends AppCompatActivity {
             noNotesView.setVisibility(View.VISIBLE);
         }
     }
+
+    public static byte[] imageViewToByte(ImageView image) {
+        Bitmap bitmap = ((BitmapDrawable)image.getDrawable()).getBitmap();
+        ByteArrayOutputStream stream = new ByteArrayOutputStream();
+        bitmap.compress(Bitmap.CompressFormat.JPEG, 30, stream);
+        byte[] byteArray = stream.toByteArray();
+
+        return byteArray;
+    }
+
+    final int REQUEST_CODE_GALLERY = 999;
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        if (requestCode == REQUEST_CODE_GALLERY) {
+            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                Intent gallery = new Intent(Intent.ACTION_GET_CONTENT);
+                gallery.setType("image/*");
+                startActivityForResult(gallery, REQUEST_CODE_GALLERY);
+            } else {
+                Toast.makeText(this, "Permission to read external storage required!", Toast.LENGTH_SHORT).show();
+            }
+            return;
+        }
+
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+    }
+
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        if (requestCode == REQUEST_CODE_GALLERY && resultCode == RESULT_OK) {
+            Uri imageUri = data.getData();
+            inputImage.setImageURI(imageUri);
+           // CropImage.activity(imageUri).setGuidelines(CropImageView.Guidelines.ON).setAspectRatio(1, 1).start(this);
+        }
+
+//        if (requestCode == CropImage.CROP_IMAGE_ACTIVITY_REQUEST_CODE) {
+//            CropImage.ActivityResult result = CropImage.getActivityResult(data);
+//
+//            if (resultCode == RESULT_OK) {
+//                Uri resultUri = result.getUri();
+//
+//                imageView.setImageURI(resultUri);
+//
+//            } else if (resultCode == CropImage.CROP_IMAGE_ACTIVITY_RESULT_ERROR_CODE) {
+//                Exception error = result.getError();
+//            }
+//        }
+
+        super.onActivityResult(requestCode, resultCode, data);
+    }
+
+
+
 }

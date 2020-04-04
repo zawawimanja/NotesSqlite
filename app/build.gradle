@@ -3,6 +3,7 @@ apply plugin: 'com.android.application'
 android {
     compileSdkVersion 26
     defaultConfig {
+        multiDexEnabled true
         applicationId "info.androidhive.sqlite"
         minSdkVersion 16
         targetSdkVersion 26
@@ -29,4 +30,5 @@ dependencies {
     compile 'com.android.support:cardview-v7:26.1.0'
     implementation 'com.android.support:recyclerview-v7:26.1.0'
     compile 'com.github.bumptech.glide:glide:3.7.0'
+    implementation 'com.android.support:multidex:1.0.3'
 }

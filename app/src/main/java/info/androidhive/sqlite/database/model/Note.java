@@ -14,12 +14,12 @@ public class Note {
     private byte[] image;
 
 
+    public Note(){
 
-
-    public Note() {
     }
 
-    public Note(int id, String note, String timestamp,String description) {
+
+    public Note(int id, String note, String timestamp,String description,byte[] image) {
         this.id = id;
         this.note = note;
         this.timestamp = timestamp;
